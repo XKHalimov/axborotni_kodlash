@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="uz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Huffman va Siklik Kodlash</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      }
+
+      h1 {
+        text-align: center;
+        color: #667eea;
+        margin-bottom: 10px;
+        font-size: 32px;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 14px;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+      }
+
+      .tab {
+        padding: 12px 24px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        color: #666;
+        transition: all 0.3s;
+        border-bottom: 3px solid transparent;
+      }
+
+      .tab.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+        font-weight: bold;
+      }
+
+      .tab:hover {
+        color: #667eea;
+      }
+
+      .content {
+        display: none;
+      }
+
+      .content.active {
+        display: block;
+        animation: fadeIn 0.3s;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .section-title {
+        color: #667eea;
+        margin-bottom: 10px;
+        font-size: 24px;
+      }
+
+      .description {
+        color: #666;
+        margin-bottom: 20px;
+        line-height: 1.6;
+      }
+
+      textarea {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        margin-bottom: 15px;
+        resize: vertical;
+        font-family: "Courier New", monospace;
+        transition: border-color 0.3s;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      button.secondary {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      }
+
+      .result-box {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border-left: 4px solid #667eea;
+      }
+
+      .result-box h3 {
+        color: #667eea;
+        margin-bottom: 15px;
+      }
+
+      .code-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .code-table th,
+      .code-table td {
+        padding: 12px;
+        text-align: left;
+      }
+
+      .code-table th {
+        background: #667eea;
+        color: white;
+        font-weight: bold;
+      }
+
+      .code-table tr:nth-child(even) {
+        background: #f8f9fa;
+      }
+
+      .code-table tr:hover {
+        background: #e9ecef;
+      }
+
+      .code-table td {
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      #huffmanTree {
+        width: 100%;
+        height: 400px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        margin-top: 20px;
+        background: white;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .stat-card h4 {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .stat-card p {
+        color: #667eea;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .encoded-text {
+        word-break: break-all;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+        color: #333;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        line-height: 1.8;
+      }
+
+      .info-box {
+        background: #e3f2fd;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        border-left: 4px solid #2196f3;
+      }
+
+      .info-box p {
+        color: #1565c0;
+        font-size: 14px;
+        margin: 5px 0;
+      }
+
+      .success {
+        color: #28a745 !important;
+      }
+
+      .warning {
+        color: #ffc107 !important;
+      }
+
+      .error {
+        color: #dc3545 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔐 Huffman va Siklik Kodlash Dasturi</h1>
+      <p class="subtitle">
+        Ma'lumotlarni siqish algoritmlari - Interaktiv dastur
+      </p>
+
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('huffman')">
+          📊 Huffman Kodlash
+        </button>
+        <button class="tab" onclick="switchTab('cyclic')">
+          🔄 Siklik Kodlash (RLE)
+        </button>
+      </div>
+
+      <!-- ========== HUFFMAN KODLASH ========== -->
+      <div id="huffman" class="content active">
+        <h2 class="section-title">Huffman Kodlash</h2>
+        <p class="description">
+          Huffman kodlash - bu ma'lumotlarni siqishning yo'qotishsiz algoritmi.
+          Har bir belgi uchun chastotasiga qarab optimal kod uzunligini
+          belgilaydi. Ko'p uchraydigan belgilar qisqa kod oladi, kam
+          uchraydiganlar esa uzunroq kod oladi.
+        </p>
+
+        <label
+          for="huffmanInput"
+          style="
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: 500;
+          "
+        >
+          Matnni kiriting:
+        </label>
+        <textarea
+          id="huffmanInput"
+          rows="6"
+          placeholder="Bu yerga matn kiriting..."
+        >
+Salom dunyo! Bu Huffman kodlash misoli.</textarea
+        >
+
+        <div class="button-group">
+          <button onclick="huffmanEncode()">🔒 Kodlash</button>
+          <button class="secondary" onclick="huffmanDecode()">
+            🔓 Dekodlash
+          </button>
+        </div>
+
+        <div id="huffmanResults"></div>
+
+        <canvas id="huffmanTree"></canvas>
+      </div>
+
+      <!-- ========== SIKLIK KODLASH ========== -->
+      <div id="cyclic" class="content">
+        <h2 class="section-title">Siklik Kodlash (Run-Length Encoding)</h2>
+        <p class="description">
+          Siklik kodlash (RLE) - bu ketma-ket takrorlanuvchi belgilarni siqish
+          algoritmi. Masalan: "AAAAAA" → "A6". Bu algoritm faqat ko'p
+          takrorlanuvchi belgilar bo'lganda samarali ishlaydi. Agar matn turli
+          belgilardan iborat bo'lsa, hajm oshishi mumkin.
+        </p>
+
+        <label
+          for="cyclicInput"
+          style="
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: 500;
+          "
+        >
+          Matnni kiriting:
+        </label>
+        <textarea
+          id="cyclicInput"
+          rows="6"
+          placeholder="Bu yerga matn kiriting..."
+        >
+AAAAAABBBBBCCCCCDDDDDEEEEE</textarea
+        >
+
+        <div class="button-group">
+          <button onclick="cyclicEncode()">🔒 Kodlash</button>
+          <button class="secondary" onclick="cyclicDecode()">
+            🔓 Dekodlash
+          </button>
+        </div>
+
+        <div id="cyclicResults"></div>
+      </div>
+    </div>
+
+    <script>
+      // ========== TAB ALMASHTIRISH ==========
+      function switchTab(tabName) {
+        const tabs = document.querySelectorAll(".tab");
+        const contents = document.querySelectorAll(".content");
+
+        tabs.forEach((tab) => tab.classList.remove("active"));
+        contents.forEach((content) => content.classList.remove("active"));
+
+        event.target.classList.add("active");
+        document.getElementById(tabName).classList.add("active");
+      }
+
+      // ========== HUFFMAN KODLASH ==========
+
+      class HuffmanNode {
+        constructor(char, freq) {
+          this.char = char;
+          this.freq = freq;
+          this.left = null;
+          this.right = null;
+        }
+      }
+
+      let huffmanRoot = null;
+      let huffmanCodes = {};
+      let encodedHuffman = "";
+
+      function buildHuffmanTree(text) {
+        // Belgilar chastotasini hisoblash
+        const freqMap = {};
+        for (let char of text) {
+          freqMap[char] = (freqMap[char] || 0) + 1;
+        }
+
+        // Min-heap yaratish (priority queue)
+        const nodes = Object.entries(freqMap).map(
+          ([char, freq]) => new HuffmanNode(char, freq)
+        );
+
+        // Daraxt qurish
+        while (nodes.length > 1) {
+          nodes.sort((a, b) => a.freq - b.freq);
+
+          const left = nodes.shift();
+          const right = nodes.shift();
+
+          const parent = new HuffmanNode(null, left.freq + right.freq);
+          parent.left = left;
+          parent.right = right;
+
+          nodes.push(parent);
+        }
+
+        return nodes[0];
+      }
+
+      function generateCodes(node, code = "", codes = {}) {
+        if (node.char !== null) {
+          codes[node.char] = code || "0";
+          return codes;
+        }
+
+        if (node.left) generateCodes(node.left, code + "0", codes);
+        if (node.right) generateCodes(node.right, code + "1", codes);
+
+        return codes;
+      }
+
+      function huffmanEncode() {
+        const text = document.getElementById("huffmanInput").value;
+
+        if (!text) {
+          alert("⚠️ Iltimos, matn kiriting!");
+          return;
+        }
+
+        huffmanRoot = buildHuffmanTree(text);
+        huffmanCodes = generateCodes(huffmanRoot);
+
+        encodedHuffman = text
+          .split("")
+          .map((char) => huffmanCodes[char])
+          .join("");
+
+        displayHuffmanResults(text, encodedHuffman, huffmanCodes);
+        drawHuffmanTree(huffmanRoot);
+      }
+
+      function huffmanDecode() {
+        if (!huffmanRoot || !encodedHuffman) {
+          alert("⚠️ Avval matnni kodlang!");
+          return;
+        }
+
+        let decoded = "";
+        let current = huffmanRoot;
+
+        for (let bit of encodedHuffman) {
+          current = bit === "0" ? current.left : current.right;
+
+          if (current.char !== null) {
+            decoded += current.char;
+            current = huffmanRoot;
+          }
+        }
+
+        alert("✅ Dekodlangan matn:\n\n" + decoded);
+      }
+
+      function displayHuffmanResults(original, encoded, codes) {
+        const originalSize = original.length * 8;
+        const encodedSize = encoded.length;
+        const compression = ((1 - encodedSize / originalSize) * 100).toFixed(2);
+
+        // Chastota jadvali
+        const freqMap = {};
+        for (let char of original) {
+          freqMap[char] = (freqMap[char] || 0) + 1;
+        }
+
+        let html = `
+                <div class="result-box">
+                    <h3>📈 Siqish Statistikasi</h3>
+                    
+                    <div class="stats">
+                        <div class="stat-card">
+                            <h4>Asl hajm</h4>
+                            <p>${originalSize} bit</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Siqilgan hajm</h4>
+                            <p class="success">${encodedSize} bit</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Siqish darajasi</h4>
+                            <p class="success">${compression}%</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Tejangan hajm</h4>
+                            <p class="success">${
+                              originalSize - encodedSize
+                            } bit</p>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 25px;">📋 Huffman Kodlar Jadvali</h3>
+                    <table class="code-table">
+                        <tr>
+                            <th>Belgi</th>
+                            <th>Chastota</th>
+                            <th>Huffman Kodi</th>
+                            <th>Kod Uzunligi</th>
+                        </tr>
+                        ${Object.entries(codes)
+                          .sort((a, b) => freqMap[b[0]] - freqMap[a[0]])
+                          .map(
+                            ([char, code]) => `
+                            <tr>
+                                <td><strong>${
+                                  char === " "
+                                    ? "⎵ [space]"
+                                    : char === "\n"
+                                    ? "↵ [enter]"
+                                    : char
+                                }</strong></td>
+                                <td>${freqMap[char]} marta</td>
+                                <td><code style="background:#e9ecef;padding:4px 8px;border-radius:4px;">${code}</code></td>
+                                <td>${code.length} bit</td>
+                            </tr>
+                        `
+                          )
+                          .join("")}
+                    </table>
+
+                    <h3 style="margin-top: 25px;">🔐 Kodlangan Binary Ma'lumot</h3>
+                    <p class="encoded-text">${encoded}</p>
+                    
+                    <div class="info-box">
+                        <p><strong>💡 Ma'lumot:</strong></p>
+                        <p>• Ko'p uchraydigan belgilar qisqa kod oldi (masalan: ${
+                          Object.entries(codes).sort(
+                            (a, b) => a[1].length - b[1].length
+                          )[0][1].length
+                        } bit)</p>
+                        <p>• Kam uchraydigan belgilar uzunroq kod oldi</p>
+                        <p>• Umumiy tejamkorlik: ${compression}% (${
+          originalSize - encodedSize
+        } bit)</p>
+                    </div>
+                </div>
+            `;
+
+        document.getElementById("huffmanResults").innerHTML = html;
+      }
+
+      function drawHuffmanTree(root) {
+        const canvas = document.getElementById("huffmanTree");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = canvas.offsetWidth;
+        canvas.height = 400;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Daraxt chuqurligini hisoblash
+        function getDepth(node) {
+          if (!node) return 0;
+          return 1 + Math.max(getDepth(node.left), getDepth(node.right));
+        }
+
+        const depth = getDepth(root);
+
+        function drawNode(node, x, y, offsetX, level = 0) {
+          if (!node) return;
+
+          // Chiziq chizish (ota-bolaga)
+          if (node.left) {
+            const leftX = x - offsetX;
+            const leftY = y + 70;
+
+            ctx.beginPath();
+            ctx.moveTo(x, y + 25);
+            ctx.lineTo(leftX, leftY - 25);
+            ctx.strokeStyle = "#667eea";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // "0" belgisi
+            ctx.fillStyle = "#667eea";
+            ctx.font = "bold 16px Arial";
+            ctx.fillText("0", (x + leftX) / 2 - 15, (y + leftY) / 2);
+
+            drawNode(node.left, leftX, leftY, offsetX / 2, level + 1);
+          }
+
+          if (node.right) {
+            const rightX = x + offsetX;
+            const rightY = y + 70;
+
+            ctx.beginPath();
+            ctx.moveTo(x, y + 25);
+            ctx.lineTo(rightX, rightY - 25);
+            ctx.strokeStyle = "#764ba2";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // "1" belgisi
+            ctx.fillStyle = "#764ba2";
+            ctx.font = "bold 16px Arial";
+            ctx.fillText("1", (x + rightX) / 2 + 10, (y + rightY) / 2);
+
+            drawNode(node.right, rightX, rightY, offsetX / 2, level + 1);
+          }
+
+          // Tugun chizish
+          ctx.beginPath();
+          ctx.arc(x, y, 25, 0, 2 * Math.PI);
+          ctx.fillStyle = node.char ? "#667eea" : "#e0e0e0";
+          ctx.fill();
+          ctx.strokeStyle = "#333";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // Matn yozish
+          ctx.fillStyle = node.char ? "#fff" : "#333";
+          ctx.font = "bold 14px Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          const displayText = node.char || node.freq.toString();
+          ctx.fillText(displayText, x, y);
+        }
+
+        // Daraxtni markazdan boshlash
+        const startX = canvas.width / 2;
+        const startY = 40;
+        const initialOffset = canvas.width / (depth + 1);
+
+        drawNode(root, startX, startY, initialOffset);
+
+        // Sarlavha
+        ctx.fillStyle = "#667eea";
+        ctx.font = "bold 16px Arial";
+        ctx.textAlign = "left";
+        ctx.fillText("🌳 Huffman Daraxti", 10, 25);
+      }
+
+      // ========== SIKLIK KODLASH (RLE) ==========
+
+      let encodedCyclic = "";
+
+      function cyclicEncode() {
+        const text = document.getElementById("cyclicInput").value;
+
+        if (!text) {
+          alert("⚠️ Iltimos, matn kiriting!");
+          return;
+        }
+
+        let encoded = "";
+        let count = 1;
+
+        for (let i = 0; i < text.length; i++) {
+          if (i + 1 < text.length && text[i] === text[i + 1]) {
+            count++;
+          } else {
+            encoded += text[i] + count;
+            count = 1;
+          }
+        }
+
+        encodedCyclic = encoded;
+        displayCyclicResults(text, encoded);
+      }
+
+      function cyclicDecode() {
+        if (!encodedCyclic) {
+          alert("⚠️ Avval matnni kodlang!");
+          return;
+        }
+
+        let decoded = "";
+        let i = 0;
+
+        while (i < encodedCyclic.length) {
+          const char = encodedCyclic[i];
+          let numStr = "";
+          i++;
+
+          // Raqamlarni to'liq o'qib olish (10 yoki undan katta sonlar uchun)
+          while (i < encodedCyclic.length && !isNaN(encodedCyclic[i])) {
+            numStr += encodedCyclic[i];
+            i++;
+          }
+
+          const count = parseInt(numStr);
+          decoded += char.repeat(count);
+        }
+
+        alert("✅ Dekodlangan matn:\n\n" + decoded);
+      }
+
+      function displayCyclicResults(original, encoded) {
+        const originalSize = original.length;
+        const encodedSize = encoded.length;
+        const compression = ((1 - encodedSize / originalSize) * 100).toFixed(2);
+
+        // Siqish yaxshi yoki yomon ekanligini aniqlash
+        const isGoodCompression = compression > 0;
+        const compressionStatus = isGoodCompression
+          ? `✅ ${compression}% siqildi`
+          : `❌ ${Math.abs(compression)}% kattaroq bo'ldi`;
+
+        const statusClass = isGoodCompression ? "success" : "error";
+
+        // Takrorlanishlar statistikasi
+        const runs = [];
+        let count = 1;
+        for (let i = 0; i < original.length; i++) {
+          if (i + 1 < original.length && original[i] === original[i + 1]) {
+            count++;
+          } else {
+            runs.push({ char: original[i], count: count });
+            count = 1;
+          }
+        }
+
+        let html = `
+                <div class="result-box">
+                    <h3>📊 Siqish Statistikasi</h3>
+                    
+                    <div class="stats">
+                        <div class="stat-card">
+                            <h4>Asl uzunlik</h4>
+                            <p>${originalSize} belgi</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Siqilgan uzunlik</h4>
+                            <p class="${statusClass}">${encodedSize} belgi</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Natija</h4>
+                            <p class="${statusClass}" style="font-size: 18px;">${compressionStatus}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Takrorlanishlar</h4>
+                            <p>${runs.length} ta</p>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 25px;">📝 Asl Matn</h3>
+                    <p class="encoded-text">${original}</p>
+
+                    <h3 style="margin-top: 20px;">🔐 Kodlangan Matn</h3>
+                    <p class="encoded-text">${encoded}</p>
+                    
+                    <h3 style="margin-top: 25px;">📋 Takrorlanishlar Jadvali</h3>
+                    <table class="code-table">
+                        <tr>
+                            <th>Belgi</th>
+                            <th>Takrorlanish</th>
+                            <th>Kodlangan ko'rinish</th>
+                        </tr>
+                        ${runs
+                          .map(
+                            (run) => `
+                            <tr>
+                                <td><strong>${
+                                  run.char === " "
+                                    ? "⎵ [space]"
+                                    : run.char === "\n"
+                                    ? "↵ [enter]"
+                                    : run.char
+                                }</strong></td>
+                                <td>${run.count} marta</td>
+                                <td><code style="background:#e9ecef;padding:4px 8px;border-radius:4px;">${
+                                  run.char
+                                }${run.count}</code></td>
+                            </tr>
+                        `
+                          )
+                          .join("")}
+                    </table>
+                    
+                    <div class="info-box">
+                        <p><strong>💡 Ma'lumot:</strong></p>
+                        <p>• Format: Belgi + Takrorlanish soni (masalan: A5 = AAAAA)</p>
+                        <p>• Siklik kodlash faqat ko'p takrorlanuvchi belgilar bo'lganda samarali.</p>
+                        <p>• Agar har bir belgi faqat 1 marta takrorlansa, hajm ikki barobar oshadi!</p>
+                        ${
+                          isGoodCompression
+                            ? '<p class="success">• ✅ Bu matn siklik kodlash uchun yaxshi mos keldi!</p>'
+                            : '<p class="error">• ❌ Bu matn siklik kodlash uchun mos emas. Huffman kodlashni sinab ko\'ring.</p>'
+                        }
+                    </div>
+                </div>
+            `;
+
+        document.getElementById("cyclicResults").innerHTML = html;
+      }
+    </script>
+  </body>
+</html>
